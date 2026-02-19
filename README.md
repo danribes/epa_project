@@ -112,9 +112,10 @@ epa_project/
 
 ## 8) Como ejecutar
 
-### Paso 1 — Navegar al directorio del proyecto
+### Paso 1 — Clonar el repositorio
 
 ```bash
+git clone https://github.com/danribes/epa_project.git
 cd epa_project/
 ```
 
