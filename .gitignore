@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+
+# Data (re-generated via fetch_data.py + main.py)
+data/raw/
+data/processed/
+
+# Charts (re-generated via main.py)
+charts/
+
+# Executed notebook (large, contains embedded images)
+notebooks/eda_executed.ipynb
+
+# OS
+.DS_Store
+Thumbs.db
