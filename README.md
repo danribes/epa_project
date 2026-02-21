@@ -1,25 +1,25 @@
 <p align="center">
-  <h1 align="center">Análisis del Mercado Laboral Español (EPA)</h1>
+  <h1 align="center">Spanish Labour Market Analysis (EPA)</h1>
   <p align="center">
-    Análisis exploratorio de datos (EDA) del mercado laboral español<br>
-    usando datos abiertos del <strong>Instituto Nacional de Estadística</strong> (INE)
+    Exploratory Data Analysis (EDA) of the Spanish labour market<br>
+    using open data from the <strong>Instituto Nacional de Estadística</strong> (INE)
   </p>
   <p align="center">
     <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python"></a>
     <a href="https://pandas.pydata.org/"><img src="https://img.shields.io/badge/Pandas-2.x-150458?logo=pandas&logoColor=white" alt="Pandas"></a>
     <a href="https://matplotlib.org/"><img src="https://img.shields.io/badge/Matplotlib-3.x-11557C" alt="Matplotlib"></a>
     <a href="https://seaborn.pydata.org/"><img src="https://img.shields.io/badge/Seaborn-0.13-4C72B0" alt="Seaborn"></a>
-    <a href="https://servicios.ine.es/wstempus/js"><img src="https://img.shields.io/badge/Datos-INE%20API-E4002B" alt="INE API"></a>
+    <a href="https://servicios.ine.es/wstempus/js"><img src="https://img.shields.io/badge/Data-INE%20API-E4002B" alt="INE API"></a>
   </p>
 </p>
 
 ---
 
-## Objetivo
+## Objective
 
-Entender la estructura del mercado laboral español por provincia, sexo y sector económico, su evolución trimestral, y las desigualdades territoriales y de género en empleo y desempleo. El periodo de análisis es **configurable por el usuario** (por defecto 2020–2025). El proyecto está diseñado para funcionar con **cualquier periodo** de datos EPA (trimestrales desde 2002).
+Understand the structure of the Spanish labour market by province, sex, and economic sector, its quarterly evolution, and the territorial and gender inequalities in employment and unemployment. The analysis period is **user-configurable** (default 2020–2025). The project is designed to work with **any period** of EPA data (quarterly from 2002 onwards).
 
-## Inicio rápido
+## Quick Start
 
 ```bash
 git clone https://github.com/danribes/epa_project.git
@@ -29,44 +29,44 @@ pip install -r requirements.txt
 python main.py --fetch --start 2020 --end 2025
 ```
 
-> Esto descarga las 6 tablas de la EPA desde la API pública del INE, ejecuta la limpieza, genera features y produce los 9 gráficos en `charts/`.
+> This downloads the 6 EPA tables from the INE public API, runs cleaning, generates features, and produces the 9 charts in `charts/`.
 
 ## Dataset
 
-| | Detalle |
+| | Details |
 |---|---|
-| **Fuente** | API pública del INE — [servicios.ine.es/wstempus/js](https://servicios.ine.es/wstempus/js) |
-| **Tablas** | 65345 (población), 65349 (tasas), 65354 (sectores), 65219 (paro por edad), 65086 (activos por nacionalidad), 65112 (ocupados por nacionalidad) |
-| **Tamaño** | ~40.700 filas x 8 cols (raw, 6 años) ➜ ~40.700 x 17 (tras limpieza + features) |
-| **Variables clave** | provincia, sexo, tipo de actividad, fecha (trimestral), valor (miles de personas o %) |
-| **Datos adicionales** | Respuestas JSON crudas de la API en `data/raw/` |
+| **Source** | INE public API — [servicios.ine.es/wstempus/js](https://servicios.ine.es/wstempus/js) |
+| **Tables** | 65345 (population), 65349 (rates), 65354 (sectors), 65219 (unemployment by age), 65086 (active by nationality), 65112 (employed by nationality) |
+| **Size** | ~40,700 rows x 8 cols (raw, 6 years) ➜ ~40,700 x 17 (after cleaning + features) |
+| **Key variables** | province, sex, activity type, date (quarterly), value (thousands of people or %) |
+| **Additional data** | Raw JSON API responses in `data/raw/` |
 
-> **Nota metodológica (gráfico 9):** La API del INE no publica una tabla con tasas de paro desglosadas simultáneamente por nacionalidad y grupo de edad. Para obtenerlas, se descargaron las tablas 65086 (activos) y 65112 (ocupados) con las mismas dimensiones (nacionalidad x sexo x edad) y se calculó: `tasa_paro = (activos - ocupados) / activos * 100`. El resultado fue validado contra la tabla oficial 65336 con coincidencia exacta.
+> **Methodological note (chart 9):** The INE API does not publish a table with unemployment rates broken down simultaneously by nationality and age group. To obtain them, tables 65086 (active) and 65112 (employed) were downloaded with the same dimensions (nationality x sex x age) and the rate was calculated as: `unemployment_rate = (active - employed) / active * 100`. The result was validated against the official table 65336 with an exact match.
 
-## Preguntas de investigación
+## Research Questions
 
-| # | Pregunta | Gráfico |
+| # | Question | Chart |
 |---|---|---|
-| Q1 | ¿Cuáles son las provincias con mayor y menor tasa de paro? ¿Ha cambiado el ranking? | 1, 6 |
-| Q2 | ¿Existe brecha de género en las tasas de actividad, empleo y paro? | 2 |
-| Q3 | ¿Cómo se distribuye el empleo por sector económico y cómo varía geográficamente? | 3 |
-| Q4 | ¿Cómo ha evolucionado el empleo total a lo largo del periodo? | 4, 5 |
-| Q5 | ¿Existe estacionalidad en el empleo/paro (trimestral)? | 6 |
-| Q6 | ¿Cómo varía la tasa de paro según el grupo de edad? ¿Diferencias por sexo? | 7 |
-| Q7 | ¿Cómo ha evolucionado el paro juvenil (16–19 y 20–24 años) frente al total? | 8 |
-| Q8 | ¿Existe brecha de desempleo entre trabajadores españoles y extranjeros? | 9 |
+| Q1 | Which provinces have the highest and lowest unemployment rates? Has the ranking changed? | 1, 6 |
+| Q2 | Is there a gender gap in activity, employment, and unemployment rates? | 2 |
+| Q3 | How is employment distributed by economic sector and how does it vary geographically? | 3 |
+| Q4 | How has total employment evolved over the period? | 4, 5 |
+| Q5 | Is there seasonality in employment/unemployment (quarterly)? | 6 |
+| Q6 | How does the unemployment rate vary by age group? Are there differences by sex? | 7 |
+| Q7 | How has youth unemployment (16–19 and 20–24) evolved compared to the total? | 8 |
+| Q8 | Is there an unemployment gap between Spanish and foreign workers? | 9 |
 
-## Data issues & fixes
+## Data Issues & Fixes
 
-| Problema | Solución |
+| Issue | Fix |
 |---|---|
-| Nombres de columna sucios (espacios, mayúsculas) | `strip().lower().replace(' ', '_')` |
-| Valor como texto con coma decimal (`203,2`) | `.str.replace(",", ".")` + `pd.to_numeric` |
-| Fechas en 5 formatos distintos (ISO, dd/mm, ms, textual) | Parser custom con fallbacks |
-| Serie_nombre en mayúsculas/minúsculas inconsistente | Parsing sobre versión `.lower()` con mapping canónico |
-| Todas las dimensiones empaquetadas en un solo string | Parsing regex por tabla para extraer provincia, sexo, actividad |
-| ~3% de nulls en valor | Mantenidos como NaN (no imputados) |
-| 20 filas duplicadas | `drop_duplicates()` por clave compuesta |
+| Dirty column names (spaces, uppercase) | `strip().lower().replace(' ', '_')` |
+| Value as text with decimal comma (`203,2`) | `.str.replace(",", ".")` + `pd.to_numeric` |
+| Dates in 5 different formats (ISO, dd/mm, ms, textual) | Custom parser with fallbacks |
+| Serie_nombre with inconsistent casing | Parsing on `.lower()` version with canonical mapping |
+| All dimensions packed into a single string | Regex parsing per table to extract province, sex, activity |
+| ~3% nulls in value | Kept as NaN (not imputed) |
+| 20 duplicate rows | `drop_duplicates()` by composite key |
 
 ## Pipeline
 
@@ -74,101 +74,101 @@ python main.py --fetch --start 2020 --end 2025
 fetch_data.py ➜ raw CSV ➜ cleaning.py ➜ utils.py ➜ features.py ➜ data/processed/ ➜ viz.py ➜ charts/
 ```
 
-El pipeline completo — incluyendo la generación de los 9 gráficos — se ejecuta con un solo comando:
+The full pipeline — including generation of all 9 charts — runs with a single command:
 
 ```bash
 python main.py --fetch --start 2020 --end 2025
 ```
 
-## Hallazgos
+## Findings
 
-> **Nota:** Los hallazgos a continuación corresponden al periodo por defecto (2020–2025). Al ejecutar el proyecto con un periodo diferente, los resultados variarán.
+> **Note:** The findings below correspond to the default period (2020–2025). Running the project with a different period will produce different results.
 
-| # | Hallazgo | Gráfico |
+| # | Finding | Chart |
 |---|---|---|
-| 1 | **Fuerte desigualdad territorial** — Las provincias del sur (Andalucía, Extremadura, Canarias) mantienen tasas de paro significativamente más altas que las del norte (País Vasco, Navarra, Aragón). | 1, 6 |
-| 2 | **Brecha de género persistente pero reduciéndose** — La tasa de paro femenina es consistentemente más alta que la masculina, aunque la diferencia se ha ido estrechando. | 2 |
-| 3 | **Economía terciarizada** — El sector servicios domina abrumadoramente el empleo (>75%), con agricultura, industria y construcción estables. | 3 |
-| 4 | **Evolución positiva del empleo total** — El empleo total ha mostrado una trayectoria al alza a lo largo del periodo analizado. | 5 |
-| 5 | **Concentración del empleo** — Madrid y Barcelona concentran una proporción desproporcionada del empleo. | 4 |
-| 6 | **Paro juvenil extremo** — Los menores de 25 años sufren tasas de paro muy superiores a la media nacional (16–19: >30%, 20–24: ~22%, general: ~10%). | 7 |
-| 7 | **Tendencia descendente del paro juvenil** — El paro juvenil ha descendido significativamente, aunque sigue triplicando (16–19) y duplicando (20–24) la tasa general. | 8 |
-| 8 | **Brecha por nacionalidad en todas las edades** — Los trabajadores extranjeros presentan tasas de paro superiores a los españoles en todos los grupos de edad. | 9 |
+| 1 | **Strong territorial inequality** — Southern provinces (Andalusia, Extremadura, Canary Islands) maintain significantly higher unemployment rates than northern ones (Basque Country, Navarre, Aragon). | 1, 6 |
+| 2 | **Persistent but narrowing gender gap** — The female unemployment rate is consistently higher than the male rate, although the gap has been narrowing. | 2 |
+| 3 | **Tertiarised economy** — The services sector overwhelmingly dominates employment (>75%), with agriculture, industry, and construction remaining stable. | 3 |
+| 4 | **Positive total employment trend** — Total employment has shown an upward trajectory throughout the analysed period. | 5 |
+| 5 | **Employment concentration** — Madrid and Barcelona account for a disproportionate share of employment. | 4 |
+| 6 | **Extreme youth unemployment** — People under 25 suffer unemployment rates far above the national average (16–19: >30%, 20–24: ~22%, overall: ~10%). | 7 |
+| 7 | **Declining youth unemployment trend** — Youth unemployment has fallen significantly, though it still triples (16–19) and doubles (20–24) the overall rate. | 8 |
+| 8 | **Nationality gap across all age groups** — Foreign workers have higher unemployment rates than Spanish workers across all age groups. | 9 |
 
-## Estructura del proyecto
+## Project Structure
 
 ```
 epa_project/
-├── fetch_data.py                     # Descarga de datos del INE
-├── main.py                           # Pipeline end-to-end
+├── fetch_data.py                     # Data download from INE
+├── main.py                           # End-to-end pipeline
 ├── data/
-│   ├── raw/                          # JSON crudos + CSV raw/dirty
-│   └── processed/                    # CSV limpio (filas x 17)
-├── charts/                           # 9 gráficos PNG generados
+│   ├── raw/                          # Raw JSON + raw/dirty CSV
+│   └── processed/                    # Clean CSV (rows x 17)
+├── charts/                           # 9 generated PNG charts
 ├── notebooks/
-│   └── eda.ipynb                     # Notebook interactivo de análisis
+│   └── eda.ipynb                     # Interactive analysis notebook
 ├── src/
 │   ├── __init__.py
-│   ├── io.py                         # Carga y guardado de datos
-│   ├── cleaning.py                   # Limpieza de datos
+│   ├── io.py                         # Data loading and saving
+│   ├── cleaning.py                   # Data cleaning
 │   ├── features.py                   # Feature engineering
-│   ├── viz.py                        # Gráficos reutilizables
-│   └── utils.py                      # Validaciones y utilidades
-├── epa_project_report.docx           # Informe completo del proyecto
+│   ├── viz.py                        # Reusable charts
+│   └── utils.py                      # Validations and utilities
+├── epa_project_report.docx           # Full project report
 ├── README.md
 └── requirements.txt
 ```
 
-## Cómo ejecutar
+## How to Run
 
-### Paso 1 — Clonar el repositorio
+### Step 1 — Clone the repository
 
 ```bash
 git clone https://github.com/danribes/epa_project.git
 cd epa_project/
 ```
 
-### Paso 2 — Crear un entorno virtual (recomendado)
+### Step 2 — Create a virtual environment (recommended)
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-### Paso 3 — Instalar dependencias
+### Step 3 — Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Paso 4 — Descargar datos del INE
+### Step 4 — Download INE data
 
 ```bash
 python fetch_data.py --start 2020 --end 2025
 ```
 
-Este paso descarga las 6 tablas de la EPA desde la API pública del INE, genera los ficheros JSON crudos y los CSV raw y dirty en `data/raw/`. Los parámetros `--start` y `--end` definen el rango de años a descargar.
+This step downloads the 6 EPA tables from the INE public API, generating the raw JSON files and the raw and dirty CSVs in `data/raw/`. The `--start` and `--end` parameters define the year range to download.
 
-### Paso 5 — Ejecutar el pipeline de limpieza + gráficos
+### Step 5 — Run the cleaning + charts pipeline
 
 ```bash
 python main.py
 ```
 
 <details>
-<summary>Salida esperada</summary>
+<summary>Expected output</summary>
 
 ```
-Cargando datos desde .../data/raw/epa_mercado_laboral_dirty.csv ...
+Loading data from .../data/raw/epa_mercado_laboral_dirty.csv ...
   Shape raw: (40724, 8)
-Limpiando datos ...
+Cleaning data ...
   Shape clean: (40704, 10)
 All validations passed.
-Generando features ...
+Generating features ...
   Shape final: (40704, 17)
-Guardado en .../data/processed/epa_mercado_laboral_clean.csv
+Saved to .../data/processed/epa_mercado_laboral_clean.csv
 
-Generando graficos ...
+Generating charts ...
   -> 01_tasa_paro_por_provincia.png
   -> 02_brecha_genero_paro.png
   -> 03_empleo_por_sector.png
@@ -178,110 +178,110 @@ Generando graficos ...
   -> 07_paro_por_edad.png
   -> 08_paro_juvenil_evolucion.png
   -> 09_paro_edad_nacionalidad.png
-Graficos guardados en charts/
+Charts saved in charts/
 ```
 </details>
 
-Alternativamente, se pueden combinar descarga + limpieza + gráficos en un solo comando:
+Alternatively, download + cleaning + charts can be combined in a single command:
 
 ```bash
 python main.py --fetch --start 2020 --end 2025
 ```
 
-### Paso 6 — Explorar el notebook (opcional)
+### Step 6 — Explore the notebook (optional)
 
 ```bash
 pip install jupyter
 jupyter notebook notebooks/eda.ipynb
 ```
 
-## Reproducir con un periodo diferente
+## Reproducing with a Different Period
 
-El proyecto está diseñado para funcionar con **cualquier periodo** de datos EPA. Para cambiar el rango temporal:
+The project is designed to work with **any period** of EPA data. To change the time range:
 
-> **Importante:** La EPA publica datos trimestrales **desde 2002**. Si se especifica un año de inicio anterior a 2002, la API del INE simplemente devolverá los datos desde 2002 en adelante, sin generar error.
+> **Important:** The EPA publishes quarterly data **from 2002 onwards**. If a start year before 2002 is specified, the INE API will simply return data from 2002 onwards without raising an error.
 
-### Paso a paso
+### Step by step
 
-1. **Elegir el periodo.** La EPA publica datos trimestrales desde 2002. Ejemplo: 2015–2020.
+1. **Choose the period.** The EPA publishes quarterly data from 2002. Example: 2015–2020.
 
-2. **Descargar los datos.** El script `fetch_data.py` se conecta a la API del INE usando el parámetro `date=YYYYMMDD:YYYYMMDD` para solicitar el rango exacto.
+2. **Download the data.** The `fetch_data.py` script connects to the INE API using the `date=YYYYMMDD:YYYYMMDD` parameter to request the exact range.
 
    ```bash
    python fetch_data.py --start 2015 --end 2020
    ```
 
-   Esto descarga las 6 tablas y genera:
-   - `data/raw/*.json` — respuestas JSON crudas de la API (una por tabla)
-   - `data/raw/epa_mercado_laboral_raw.csv` — CSV combinado limpio
-   - `data/raw/epa_mercado_laboral_dirty.csv` — CSV con suciedad intencional
+   This downloads the 6 tables and generates:
+   - `data/raw/*.json` — raw JSON API responses (one per table)
+   - `data/raw/epa_mercado_laboral_raw.csv` — clean combined CSV
+   - `data/raw/epa_mercado_laboral_dirty.csv` — CSV with intentional dirt
 
-3. **Ejecutar el pipeline.** El código de limpieza, features y gráficos es completamente agnóstico al periodo — no tiene fechas hardcodeadas. Los 9 gráficos se generan automáticamente en `charts/`.
+3. **Run the pipeline.** The cleaning, features, and charts code is completely period-agnostic — it contains no hardcoded dates. All 9 charts are generated automatically in `charts/`.
 
    ```bash
    python main.py
    ```
 
-4. **Explorar el notebook (opcional).** El notebook `eda.ipynb` lee del CSV dirty y se adapta automáticamente al periodo descargado:
-   - Los **títulos de todos los gráficos** incluyen el rango temporal detectado en los datos (e.g. "2015–2020").
-   - Los **gráficos 7–9** (edad, juventud, nacionalidad) leen los JSON crudos y se adaptan al periodo.
-   - Las **conclusiones** están redactadas de forma agnóstica al periodo.
-   - No es necesario modificar ninguna celda del notebook.
+4. **Explore the notebook (optional).** The `eda.ipynb` notebook reads from the dirty CSV and adapts automatically to the downloaded period:
+   - **Chart titles** all include the temporal range detected in the data (e.g. "2015–2020").
+   - **Charts 7–9** (age, youth, nationality) read the raw JSONs and adapt to the period.
+   - **Conclusions** are written in a period-agnostic way.
+   - No notebook cells need to be modified.
 
    ```bash
    jupyter notebook notebooks/eda.ipynb
    ```
 
-### Tablas descargadas por `fetch_data.py`
+### Tables downloaded by `fetch_data.py`
 
-| Tabla INE | Descripción | Uso |
+| INE Table | Description | Use |
 |---|---|---|
-| 65345 | Población 16+ por actividad, sexo y provincia | CSV principal |
-| 65349 | Tasas de actividad/paro/empleo por provincia y sexo | CSV principal |
-| 65354 | Ocupados por sector económico y provincia | CSV principal |
-| 65219 | Tasas de paro por sexo y grupo de edad | Gráficos 7–8 |
-| 65086 | Activos por nacionalidad, sexo y grupo de edad | Gráfico 9 (merge) |
-| 65112 | Ocupados por nacionalidad, sexo y grupo de edad | Gráfico 9 (merge) |
+| 65345 | Population 16+ by activity, sex and province | Main CSV |
+| 65349 | Activity/unemployment/employment rates by province and sex | Main CSV |
+| 65354 | Employed by economic sector and province | Main CSV |
+| 65219 | Unemployment rates by sex and age group | Charts 7–8 |
+| 65086 | Active by nationality, sex and age group | Chart 9 (merge) |
+| 65112 | Employed by nationality, sex and age group | Chart 9 (merge) |
 
-### Ejemplos de uso
+### Usage examples
 
 ```bash
-# Periodo original del proyecto
+# Original project period
 python fetch_data.py --start 2020 --end 2025
 
-# Crisis financiera 2008
+# 2008 financial crisis
 python fetch_data.py --start 2008 --end 2014
 
-# Pre-pandemia
+# Pre-pandemic
 python fetch_data.py --start 2015 --end 2020
 
-# Rango largo (20 años)
+# Long range (20 years)
 python fetch_data.py --start 2005 --end 2025
 
-# Solo descargar, sin generar CSV dirty
+# Download only, without generating dirty CSV
 python fetch_data.py --start 2020 --end 2025 --no-dirty
 
-# Fetch + limpieza en un solo comando
+# Fetch + cleaning in a single command
 python main.py --fetch --start 2015 --end 2020
 ```
 
-### Diseño adaptativo al periodo
+### Period-adaptive design
 
-Todo el código del proyecto es **agnóstico al periodo seleccionado**. No contiene fechas hardcodeadas:
+All project code is **period-agnostic**. It contains no hardcoded dates:
 
-| Componente | Mecanismo de adaptación |
+| Component | Adaptation mechanism |
 |---|---|
-| `fetch_data.py` | Parámetros `--start` / `--end` para definir el rango |
-| `src/cleaning.py` | Parsing de fechas y dimensiones sin referencia a años concretos |
-| `src/features.py` | Feature engineering temporal genérico (trimestre, mes, year) |
-| `src/viz.py` | Genera los 9 gráficos con títulos que incluyen el rango temporal detectado en los datos |
-| `main.py` | Orquesta todo el pipeline (fetch + clean + features + charts) en un solo comando |
-| `notebooks/eda.ipynb` | Deriva `PERIOD_LABEL` de los datos y lo usa en todos los títulos de gráficos |
+| `fetch_data.py` | `--start` / `--end` parameters to define the range |
+| `src/cleaning.py` | Date and dimension parsing with no reference to specific years |
+| `src/features.py` | Generic temporal feature engineering (quarter, month, year) |
+| `src/viz.py` | Generates all 9 charts with titles that include the temporal range detected in the data |
+| `main.py` | Orchestrates the full pipeline (fetch + clean + features + charts) in a single command |
+| `notebooks/eda.ipynb` | Derives `PERIOD_LABEL` from the data and uses it in all chart titles |
 
-### Notas importantes
+### Important notes
 
-- La API del INE es pública y gratuita; no requiere API key.
-- El script incluye reintentos automáticos (3 intentos con backoff exponencial) y un delay de cortesía de 1s entre peticiones.
-- **Los datos de la EPA están disponibles trimestralmente desde 2002.** Si se especifica `--start` con un año anterior a 2002, la API del INE devolverá los datos desde 2002 sin generar error.
-- El pipeline completo (`main.py`) ejecuta limpieza, features y generación de los 9 gráficos en `charts/`. Todos los componentes son agnósticos al periodo: no contienen fechas hardcodeadas.
-- La suciedad intencional del CSV dirty es determinista (seed=42), por lo que ejecutar dos veces con el mismo periodo produce exactamente el mismo fichero.
+- The INE API is public and free; no API key is required.
+- The script includes automatic retries (3 attempts with exponential backoff) and a 1s courtesy delay between requests.
+- **EPA data is available quarterly from 2002.** If `--start` is set to a year before 2002, the INE API will return data from 2002 onwards without raising an error.
+- The full pipeline (`main.py`) runs cleaning, features, and generation of all 9 charts in `charts/`. All components are period-agnostic: they contain no hardcoded dates.
+- The intentional dirt in the dirty CSV is deterministic (seed=42), so running twice with the same period produces exactly the same file.
