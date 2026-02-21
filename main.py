@@ -15,9 +15,9 @@ def main():
     parser.add_argument("--fetch", action="store_true",
                         help="Descargar datos del INE antes de procesar")
     parser.add_argument("-s", "--start", type=int, default=None,
-                        help="Ano de inicio (requiere --fetch)")
+                        help="Año de inicio (requiere --fetch)")
     parser.add_argument("-e", "--end", type=int, default=None,
-                        help="Ano de fin (requiere --fetch)")
+                        help="Año de fin (requiere --fetch)")
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parent
