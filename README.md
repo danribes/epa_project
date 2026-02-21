@@ -43,6 +43,25 @@ python main.py --fetch --start 2020 --end 2025
 
 > **Methodological note (chart 9):** The INE API does not publish a table with unemployment rates broken down simultaneously by nationality and age group. To obtain them, tables 65086 (active) and 65112 (employed) were downloaded with the same dimensions (nationality x sex x age) and the rate was calculated as: `unemployment_rate = (active - employed) / active * 100`. The result was validated against the official table 65336 with an exact match.
 
+### Raw JSON field glossary
+
+The raw JSON files in `data/raw/` use INE's internal field names and coded values. This table documents every field:
+
+| Field | Meaning | Values / Example |
+|---|---|---|
+| `COD` | Internal series code | `"EPA397872"` |
+| `Nombre` | Series name (all dimensions packed in one string) | `"Total Nacional. Ocupados. Ambos sexos. Total CNAE. Personas. "` |
+| `FK_Unidad` | Unit of measurement — **3** = Personas, **101** = Porcentaje | `3` |
+| `FK_Escala` | Scale/multiplier — **4** = Miles (×1,000) | `4` → a `Valor` of 22463.3 means 22,463,300 persons |
+| `Fecha` | **Unix timestamp in milliseconds** | `1759269600000` → 2025-10-01 |
+| `FK_TipoDato` | Data type — **1** = definitive data | Always `1` in EPA |
+| `FK_Periodo` | Quarter ID (non-sequential): **19**=Q4, **20**=Q1, **21**=Q2, **22**=Q3 | `22` → Q3 |
+| `Anyo` | Year (Spanish *año* in ASCII) | `2025` |
+| `Valor` | Observed value (unit and scale depend on `FK_Unidad` / `FK_Escala`) | `22463.3` |
+| `Secreto` | Statistical secrecy flag — `true` = value suppressed for respondent privacy | `false` (all values publishable in 2020–2025) |
+
+> **Note:** `FK_Periodo` uses an internal INE numbering (19–22) shared across periodicities (monthly, quarterly, annual), which is why quarter IDs do not start at 1. The pipeline maps them to T1–T4 via `PERIODO_MAP` in `src/features.py`. `FK_Unidad` and `FK_Escala` are not extracted into the CSV — the unit context is implicit in the analysis. Full catalogues available at `servicios.ine.es/wstempus/js/ES/UNIDADES` and `.../ESCALAS`.
+
 ## Research Questions
 
 | # | Question | Chart |

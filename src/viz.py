@@ -7,6 +7,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 import seaborn as sns
 
 
@@ -77,7 +78,7 @@ def plot_paro_por_provincia(df, trimestre=None, save_path=None):
     colors = ['#e74c3c' if v > median_val else '#2ecc71' for v in data['valor'].values]
     ax.barh(data['provincia'], data['valor'], color=colors)
     ax.set_xlabel('Tasa de paro (%)')
-    ax.set_title(f'Tasa de paro por provincia — {trimestre} ({period})')
+    ax.set_title(f'Tasa de paro por provincia — {trimestre} ({period})\n(rojo = por encima de la mediana)')
     ax.axvline(median_val, color='gray', linestyle='--', alpha=0.7, label='Mediana')
     ax.legend()
     plt.tight_layout()
@@ -140,8 +141,8 @@ def plot_empleo_por_sector(df, save_path=None):
         ax.plot(sub['fecha'], sub['valor'], marker='o',
                 label=sector, color=colors.get(sector, 'gray'), linewidth=2)
     ax.set_xlabel('Fecha')
-    ax.set_ylabel('Ocupados (miles)')
-    ax.set_title(f'Empleo por sector economico — Total Nacional ({period})')
+    ax.set_ylabel('Ocupados (miles de personas)')
+    ax.set_title(f'Evolucion del empleo por sector economico — Total Nacional ({period})')
     ax.legend()
     ax.grid(True, alpha=0.3)
     plt.tight_layout()
@@ -159,7 +160,7 @@ def plot_distribucion_ocupados(df, save_path=None):
     period = _period_label(df)
     mask = (
         (df['tabla'] == 65345) &
-        (df['actividad'].str.contains('Ocupados', case=False, na=False)) &
+        (df['actividad'].str.lower() == 'ocupados') &
         (df['sexo'] == 'Ambos sexos') &
         (~df['es_nacional'])
     )
@@ -186,7 +187,7 @@ def plot_evolucion_empleo_total(df, save_path=None):
     period = _period_label(df)
     mask = (
         (df['tabla'] == 65345) &
-        (df['actividad'].str.contains('Ocupados', case=False, na=False)) &
+        (df['actividad'].str.lower() == 'ocupados') &
         (df['sexo'] == 'Ambos sexos') &
         (df['es_nacional'])
     )
@@ -201,7 +202,7 @@ def plot_evolucion_empleo_total(df, save_path=None):
     ax.fill_between(data['fecha'], data['valor'], y_bottom, alpha=0.15, color='#2c3e50')
     ax.set_ylim(bottom=y_bottom)
     ax.set_xlabel('Fecha')
-    ax.set_ylabel('Ocupados (miles)')
+    ax.set_ylabel('Ocupados (miles de personas)')
     ax.set_title(f'Evolucion del empleo total — Total Nacional ({period})')
     ax.grid(True, alpha=0.3)
     plt.tight_layout()
@@ -282,25 +283,29 @@ def plot_paro_por_edad(raw_dir, save_path=None):
     latest['edad'] = pd.Categorical(latest['edad'], categories=age_order, ordered=True)
     latest = latest.sort_values('edad')
 
-    fig, ax = plt.subplots(figsize=(14, 6))
-    sexos = ['Ambos sexos', 'Hombres', 'Mujeres']
-    colors = {'Ambos sexos': '#95a5a6', 'Hombres': '#3498db', 'Mujeres': '#e74c3c'}
+    fig, ax = plt.subplots(figsize=(14, 7))
+    sexos = [('Ambos sexos', '#555555'), ('Hombres', '#3498db'), ('Mujeres', '#e74c3c')]
     width = 0.25
     x = np.arange(len(age_order))
 
-    for i, sexo in enumerate(sexos):
-        sub = latest[latest['sexo'] == sexo].set_index('edad').reindex(age_order)
-        ax.bar(x + i * width, sub['valor'].values, width, label=sexo,
-               color=colors[sexo], alpha=0.85)
+    for i, (sexo, color) in enumerate(sexos):
+        mask = latest['sexo'] == sexo
+        if mask.sum() == 0:
+            mask = latest['sexo'].str.lower() == sexo.lower()
+        sub = latest[mask].set_index('edad').reindex(age_order)
+        ax.bar(x + (i - 1) * width, sub['valor'].values, width, label=sexo,
+               color=color, alpha=0.85)
 
     trim_label = pd.Timestamp(last_fecha).to_period('Q')
-    ax.set_xticks(x + width)
-    ax.set_xticklabels(age_order, rotation=45, ha='right')
+    short_labels = [e.replace(' años', '').replace('De ', '').replace(' a ', '-')
+                    .replace(' y más', '+') for e in age_order]
+    ax.set_xticks(x)
+    ax.set_xticklabels(short_labels, rotation=45, ha='right')
     ax.set_xlabel('Grupo de edad')
     ax.set_ylabel('Tasa de paro (%)')
-    ax.set_title(f'Tasa de paro por grupo de edad y sexo — {trim_label} ({period})')
+    ax.set_title(f'Tasa de paro por grupo de edad y sexo — Total Nacional ({trim_label})')
     ax.legend()
-    ax.grid(True, alpha=0.3, axis='y')
+    ax.grid(True, alpha=0.3)
     plt.tight_layout()
     if save_path:
         fig.savefig(save_path, dpi=150, bbox_inches='tight')
@@ -322,24 +327,32 @@ def plot_paro_juvenil_evolucion(raw_dir, save_path=None):
     period = f"{int(data['anyo'].min())}–{int(data['anyo'].max())}"
     ambos = data[data['sexo'] == 'Ambos sexos'].copy()
 
-    groups = {
-        '16 y más años': {'color': '#2c3e50', 'lw': 3},
-        'De 16 a 19 años': {'color': '#e74c3c', 'lw': 2},
-        'De 20 a 24 años': {'color': '#e67e22', 'lw': 2},
-    }
+    # Identify total and two youngest age groups dynamically
+    all_ages = sorted(ambos['edad'].unique(),
+                      key=lambda e: int(re.search(r'\d+', e).group()))
+    total_age = next((e for e in all_ages if '16 y m' in e.lower()), None)
+    youth_groups = [e for e in all_ages if e != total_age][:2]
 
-    fig, ax = plt.subplots(figsize=(12, 6))
-    for edad_label, style in groups.items():
+    groups_order = youth_groups + ([total_age] if total_age else [])
+    colors = ['#e74c3c', '#f39c12', '#95a5a6']
+    styles = [('-', 'o'), ('-', 'o'), ('--', 's')]
+
+    fig, ax = plt.subplots(figsize=(14, 6))
+    for edad_label, color, (linestyle, marker) in zip(groups_order, colors, styles):
         sub = ambos[ambos['edad'] == edad_label].sort_values('fecha')
         if sub.empty:
             continue
-        ax.plot(sub['fecha'], sub['valor'], marker='o', markersize=4,
-                label=edad_label, color=style['color'], linewidth=style['lw'])
+        label = (edad_label.replace(' años', '').replace('De ', '')
+                 .replace(' a ', '-').replace(' y más', '+'))
+        if edad_label == total_age:
+            label = f'Total ({label})'
+        ax.plot(sub['fecha'], sub['valor'], linestyle=linestyle, marker=marker,
+                label=label, color=color, linewidth=2, markersize=6)
 
     ax.set_xlabel('Fecha')
     ax.set_ylabel('Tasa de paro (%)')
-    ax.set_title(f'Evolucion del paro juvenil vs total — Ambos sexos ({period})')
-    ax.legend()
+    ax.set_title(f'Evolucion del paro juvenil vs total — Total Nacional ({period})')
+    ax.legend(fontsize=11)
     ax.grid(True, alpha=0.3)
     plt.tight_layout()
     if save_path:
@@ -415,8 +428,8 @@ def plot_paro_edad_nacionalidad(raw_dir, save_path=None):
     merged['edad'] = pd.Categorical(merged['edad'], categories=age_order, ordered=True)
     merged = merged.sort_values('edad')
 
-    fig, ax = plt.subplots(figsize=(10, 6))
-    colors = {'Española': '#3498db', 'Extranjera': '#e74c3c'}
+    fig, ax = plt.subplots(figsize=(12, 7))
+    colors = {'Española': '#2196F3', 'Extranjera': '#FF9800'}
     width = 0.35
     x = np.arange(len(age_order))
 
@@ -430,12 +443,15 @@ def plot_paro_edad_nacionalidad(raw_dir, save_path=None):
                         f'{v:.1f}%', ha='center', va='bottom', fontsize=8)
 
     trim_label = pd.Timestamp(last_fecha).to_period('Q')
+    short_age = [e.replace(' años', '').replace('De ', '').replace(' a ', '-')
+                 .replace(' y más', '+') for e in age_order]
     ax.set_xticks(x + width / 2)
-    ax.set_xticklabels(age_order, rotation=45, ha='right')
+    ax.set_xticklabels(short_age, rotation=45, ha='right', fontsize=12)
     ax.set_xlabel('Grupo de edad')
     ax.set_ylabel('Tasa de paro (%)')
-    ax.set_title(f'Tasa de paro por edad y nacionalidad — {trim_label} ({period})')
-    ax.legend()
+    ax.set_title(f'Tasa de paro por grupo de edad y nacionalidad — {trim_label}')
+    ax.legend(fontsize=11, loc='upper right')
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f'{v:.0f}%'))
     ax.grid(True, alpha=0.3, axis='y')
     plt.tight_layout()
     if save_path:

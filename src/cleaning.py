@@ -123,8 +123,9 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
         records.append(parsed)
     out = pd.concat([out, pd.DataFrame(records)], axis=1)
 
-    # 5) Dates
-    out['fecha'] = out['fecha'].apply(parse_fecha)
+    # 5) Dates — list comprehension + pd.to_datetime ensures datetime64[ns] dtype
+    parsed = [parse_fecha(x) for x in out['fecha']]
+    out['fecha'] = pd.to_datetime(pd.Series(parsed))
 
     # 6) Normalize sexo
     out['sexo'] = out['sexo'].str.strip().replace(SEXO_CANONICAL)
