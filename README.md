@@ -389,7 +389,9 @@ The cleaning pipeline is fully deterministic and reproducible.
 - **Separating cleaning from feature engineering** — `cleaning.py` corrects errors; `features.py` adds business meaning. The boundary is enforced by saving the clean CSV between phases.
 - **Dynamic period labelling** — `PERIOD_START` / `PERIOD_END` are derived from the data, not hardcoded. Charts adapt to any period without manual editing.
 - **Computed unemployment rate** (Chart 9) — Merging *activos* and *ocupados* tables by nationality/age extracts an insight unavailable in any single INE table. Validated against official table 65336.
+- **Centralized configuration** — All path constants live in `src/config.py`, making the project easy to relocate or restructure.
 - **Validation before analysis** — `validate_clean()` acts as a hard gate before feature engineering.
+- **Test suite** — 12 pytest tests covering all `src/` modules (config, io, cleaning, features, utils) ensure pipeline correctness.
 - **Nine charts, not one dashboard** — Each chart is an independent PNG answering a specific research question. Both the notebook and `src/viz.py` implement the same logic independently.
 
 ---
@@ -400,6 +402,8 @@ The cleaning pipeline is fully deterministic and reproducible.
 epa_project/
 ├── fetch_data.py                     # Data download from INE
 ├── main.py                           # End-to-end pipeline
+├── conftest.py                       # Pytest root configuration
+├── pyrightconfig.json                # IDE import resolution config
 ├── data/
 │   ├── raw/                          # Raw JSON + raw/dirty CSV
 │   └── processed/                    # Clean CSV (156,456 rows × 17 cols)
@@ -408,11 +412,15 @@ epa_project/
 │   └── eda.ipynb                     # Interactive analysis notebook
 ├── src/
 │   ├── __init__.py
+│   ├── config.py                     # Centralized path constants
 │   ├── io.py                         # Data loading and saving
 │   ├── cleaning.py                   # Data cleaning
 │   ├── features.py                   # Feature engineering
 │   ├── viz.py                        # Reusable charts
 │   └── utils.py                      # Validations and utilities
+├── tests/
+│   ├── __init__.py
+│   └── test_pipeline.py              # 12 pytest tests (config, io, cleaning, features, utils)
 ├── epa_project_report.docx           # Full analysis report (Word, with charts)
 ├── README.md
 └── requirements.txt
@@ -489,7 +497,16 @@ Alternatively, download + cleaning + charts can be combined in a single command:
 python main.py --fetch --start 2002 --end 2025
 ```
 
-### Step 6 — Explore the notebook (optional)
+### Step 6 — Run the tests
+
+```bash
+pip install pytest
+python -m pytest tests/ -v
+```
+
+All 12 tests cover `src/config`, `src/io`, `src/cleaning`, `src/features`, and `src/utils`.
+
+### Step 7 — Explore the notebook (optional)
 
 ```bash
 pip install jupyter
@@ -564,10 +581,12 @@ All project code is **period-agnostic**. It contains no hardcoded dates:
 | Component | Adaptation mechanism |
 |---|---|
 | `fetch_data.py` | `--start` / `--end` parameters to define the range |
+| `src/config.py` | Centralized path constants — single place to change all data paths |
 | `src/cleaning.py` | Date and dimension parsing with no reference to specific years |
 | `src/features.py` | Generic temporal feature engineering (quarter, month, year) |
 | `src/viz.py` | Generates all 9 charts with titles that include the temporal range detected in the data |
 | `main.py` | Orchestrates the full pipeline (fetch + clean + features + charts) in a single command |
+| `tests/test_pipeline.py` | Data-driven tests that validate against the actual dataset |
 | `notebooks/eda.ipynb` | Derives `PERIOD_LABEL` from the data and uses it in all chart titles |
 
 ### Important notes
@@ -591,6 +610,7 @@ requests        # INE API calls
 python-docx     # Word report generation
 openpyxl        # (optional, for Excel export)
 jupyter         # For interactive notebook use
+pytest          # Test suite
 ```
 
 Install with: `pip install -r requirements.txt`

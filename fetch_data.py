@@ -324,7 +324,7 @@ if __name__ == "__main__":
               f"({args.end - args.start} solicitados)")
         sys.exit(1)
 
-    root = Path(__file__).resolve().parent
-    out_dir = args.output_dir or (root / "data" / "raw")
+    from src.config import DATA_RAW
+    out_dir = args.output_dir or DATA_RAW
 
     fetch_all(args.start, args.end, out_dir, create_dirty=args.dirty)
