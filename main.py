@@ -1,7 +1,7 @@
 import argparse
 from datetime import datetime
-from pathlib import Path
 
+from src.config import ROOT, DATA_RAW, DATA_PROCESSED, CHARTS_DIR, RAW_PATH, OUT_PATH
 from src.io import load_csv
 from src.cleaning import clean
 from src.features import build_features
@@ -20,10 +20,8 @@ def main():
                         help="Año de fin (requiere --fetch)")
     args = parser.parse_args()
 
-    root = Path(__file__).resolve().parent
-
     # Clean previous outputs before starting
-    for d in (root / "data" / "processed", root / "charts"):
+    for d in (DATA_PROCESSED, CHARTS_DIR):
         if d.exists():
             for f in d.iterdir():
                 if f.is_file():
@@ -34,14 +32,11 @@ def main():
         from fetch_data import fetch_all
         start = args.start or (datetime.now().year - 5)
         end = args.end or datetime.now().year
-        fetch_all(start, end, root / "data" / "raw")
+        fetch_all(start, end, DATA_RAW)
         print()
 
-    raw_path = root / "data" / "raw" / "epa_mercado_laboral_dirty.csv"
-    out_path = root / "data" / "processed" / "epa_mercado_laboral_clean.csv"
-
-    print(f"Cargando datos desde {raw_path} ...")
-    df = load_csv(raw_path)
+    print(f"Cargando datos desde {RAW_PATH} ...")
+    df = load_csv(RAW_PATH)
     print(f"  Shape raw: {df.shape}")
 
     print("Limpiando datos ...")
@@ -53,14 +48,12 @@ def main():
     df = build_features(df)
     print(f"  Shape final: {df.shape}")
 
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(out_path, index=False)
-    print(f"Guardado en {out_path}")
+    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(OUT_PATH, index=False)
+    print(f"Guardado en {OUT_PATH}")
 
     print("\nGenerando graficos ...")
-    raw_dir = root / "data" / "raw"
-    charts_dir = root / "charts"
-    generate_all_charts(df, raw_dir, charts_dir)
+    generate_all_charts(df, DATA_RAW, CHARTS_DIR)
     print("Graficos guardados en charts/")
 
 
