@@ -37,25 +37,27 @@ def canon_sexo(s: str) -> str:
     return SEXO_CANONICAL.get(s.lower().strip(), s.strip().title())
 
 
-def parse_fecha(val) -> pd.Timestamp:
+def parse_fecha(val) -> pd.Timestamp | None:
     """Parse date from mixed formats: ISO, dd/mm/yyyy, yyyy/mm/dd, textual, ms timestamp."""
     if pd.isna(val) or val == '<NA>':
-        return pd.NaT
+        return None
     val = str(val).strip()
     if val.isdigit() and len(val) > 10:
         try:
-            return pd.Timestamp(int(val), unit='ms')
+            ts = pd.Timestamp(int(val), unit='ms')
+            return ts if isinstance(ts, pd.Timestamp) else None
         except Exception:
             pass
     for fmt in ['%Y-%m-%d', '%d/%m/%Y', '%Y/%m/%d', '%b %d, %Y']:
         try:
-            return pd.Timestamp(datetime.strptime(val, fmt))
+            ts = pd.Timestamp(datetime.strptime(val, fmt))
+            return ts if isinstance(ts, pd.Timestamp) else None
         except (ValueError, AttributeError):
             continue
     try:
         return pd.to_datetime(val, dayfirst=True)
     except Exception:
-        return pd.NaT
+        return None
 
 
 def _parse_serie_65345(nombre_lower: str) -> dict:
@@ -102,6 +104,10 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     # 1) Column names
     out.columns = [c.strip().lower().replace(' ', '_') for c in out.columns]
 
+    # Handle raw data where date column is named fecha_ms
+    if 'fecha_ms' in out.columns and 'fecha' not in out.columns:
+        out = out.rename(columns={'fecha_ms': 'fecha'})
+
     # 2) Numeric: valor
     out['valor'] = out['valor'].astype('string').str.replace(',', '.', regex=False)
     out['valor'] = pd.to_numeric(out['valor'], errors='coerce')
@@ -114,9 +120,11 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     parsers = {65345: _parse_serie_65345, 65349: _parse_serie_65349, 65354: _parse_serie_65354}
     records = []
     for _, row in out.iterrows():
-        parser = parsers.get(row['tabla'])
+        tabla_id: int = row['tabla']  # type: ignore[assignment]
+        nombre: str = row['serie_nombre_lower']  # type: ignore[assignment]
+        parser = parsers.get(tabla_id)
         try:
-            parsed = parser(row['serie_nombre_lower']) if parser else {
+            parsed = parser(nombre) if parser else {
                 'provincia': 'Desconocida', 'sexo': 'Desconocido', 'actividad': 'Desconocida'}
         except Exception:
             parsed = {'provincia': 'Error', 'sexo': 'Error', 'actividad': 'Error'}
